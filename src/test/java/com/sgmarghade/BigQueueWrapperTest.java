@@ -1,11 +1,14 @@
 package com.sgmarghade;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import static org.mockito.Matchers.any;
@@ -16,7 +19,7 @@ import static org.mockito.Mockito.*;
  */
 public class BigQueueWrapperTest {
     private BigQueueWrapper<TestModel> wrapper;
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper;
 
     @BeforeMethod
     public void setup() throws IOException {
@@ -69,6 +72,18 @@ public class BigQueueWrapperTest {
 
         wrapper.take();
         verify(wrapper, times(1)).await();
+    }
+
+    @Test
+    void testShouldHaveDrainToWorkingMethod() throws IOException {
+        when(wrapper.dequeue()).thenReturn(mock(TestModel.class)).thenReturn(mock(TestModel.class)).thenReturn(mock(TestModel.class)).thenReturn(null);
+        when(mapper.writeValueAsBytes(any(TestModel.class))).thenReturn(new byte[] { 2 });
+        wrapper.enqueue(new TestModel("hi","hello"));
+        wrapper.enqueue(new TestModel("hi","hello"));
+        wrapper.enqueue(new TestModel("hi","hello"));
+        List<TestModel> list=  new ArrayList<TestModel>();
+        wrapper.drainTo(list,10);
+        Assert.assertEquals(list.size(),3);
     }
 
 }

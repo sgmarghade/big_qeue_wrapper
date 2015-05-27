@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -133,5 +134,14 @@ public class BigQueueWrapper<T> {
 
     protected void signalAll() {
         notEmpty.signalAll();
+    }
+
+    public void drainTo(List<T> list, int size) throws IOException {
+        for(int i =0; i< size; i++){
+            T data = dequeue();
+            if(data != null) {
+                list.add(data);
+            }
+        }
     }
 }
